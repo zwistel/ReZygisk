@@ -21,6 +21,8 @@ namespace zygiskd {
   }
 
   int Connect(uint8_t retry) {
+    retry++;
+
     int fd = socket(PF_UNIX, SOCK_STREAM | SOCK_CLOEXEC, 0);
     struct sockaddr_un addr = {
       .sun_family = AF_UNIX,
@@ -31,8 +33,8 @@ namespace zygiskd {
     strcpy(addr.sun_path, socket_path.c_str());
     socklen_t socklen = sizeof(addr);
 
-    while (retry--) {
-      int r = connect(fd, reinterpret_cast<struct sockaddr*>(&addr), socklen);
+    while (--retry) {
+      int r = connect(fd, (struct sockaddr *)&addr, socklen);
       if (r == 0) return fd;
       if (retry) {
         PLOGE("Retrying to connect to zygiskd, sleep 1s");
